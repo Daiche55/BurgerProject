@@ -21,6 +21,7 @@ class BurgerBuilder extends Component {
 			meat: 0,
     },
     totalPrice: 0,
+    discounted: false,
     purchasable: false,
     purchasing: false,
   };
@@ -36,6 +37,31 @@ class BurgerBuilder extends Component {
     this.setState({ purchasable: sum > 0})
   }
 
+  applyDiscount(ingredients) {
+    const discountedSum = Object.keys(ingredients)
+        .map((igKey) => {
+          return (ingredients[igKey] * INGREDIENT_PRICES[igKey]) * 0.8
+        }).reduce((sum, el) => {
+          return sum += el;
+        }, 0);
+    return discountedSum;
+  }
+
+  discountBulkPurchase(ingredients) {
+    const sum = Object.keys(ingredients)
+      .map((igKey) => {
+        return ingredients[igKey];
+      }).reduce((sum, el) => {
+        return sum += el;
+      }, 0);
+
+    if (sum >= 5) {
+      this.setState({ totalPrice: this.applyDiscount(ingredients), discounted: true })
+    } else {
+      this.setState({ discounted: false })
+    }
+  }
+
 	addIngredientHandler = type => {
 		const oldCount = this.state.ingredients[type];
     const updatedCounted = oldCount + 1;
@@ -48,6 +74,7 @@ class BurgerBuilder extends Component {
     const newPrice = oldPrice + priceAddition;
     this.setState({ totalPrice: newPrice, ingredients: updatedIngredients });
     this.updatePurchaseState(updatedIngredients);
+    this.discountBulkPurchase(updatedIngredients);
 	};
 
 	removeIngredientHandler = type => {
@@ -65,6 +92,7 @@ class BurgerBuilder extends Component {
     const newPrice = oldPrice - priceDeduction;
     this.setState({ totalPrice: newPrice, ingredients: updatedIngredients });
     this.updatePurchaseState(updatedIngredients);
+    this.discountBulkPurchase(updatedIngredients);
   };
 
   purchaseHandler = () => {
@@ -94,6 +122,7 @@ class BurgerBuilder extends Component {
 					modalClosed={this.purchaseCancelHandler}
 				>
 					<OrderSummary
+            totalPrice={this.state.totalPrice}
 						ingredients={this.state.ingredients}
 						purchaseCanceled={this.purchaseCancelHandler}
 						purchaseContinued={this.purchaseContinueHandler}
@@ -106,7 +135,8 @@ class BurgerBuilder extends Component {
 					disabled={disabledInfo}
 					purchasable={this.state.purchasable}
 					price={this.state.totalPrice}
-					ordered={this.purchaseHandler}
+          ordered={this.purchaseHandler}
+          discounted={this.state.discounted}
 				/>
 			</Aux>
 		);

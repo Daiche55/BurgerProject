@@ -12,6 +12,7 @@ const controls = [
 
 const buildControls = props => (
 	<div className={classes.BuildControls}>
+    {props.discounted ? 'Discounted Right Now!!' : 'Aint gonna discount for ya! Fuck off!!'}
     <p>Current Price: <strong>{props.price.toFixed(2)}</strong></p>
 		{controls.map(ctrl => (
 			<BuildControl
